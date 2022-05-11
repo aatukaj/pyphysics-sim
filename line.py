@@ -6,13 +6,16 @@ import pygame.gfxdraw
 class LineSegment(pygame.sprite.Sprite):
     def __init__(self, A, B, groups):
         super().__init__(groups)
-        self.A = A
-        self.B = B
-        self.rect=pygame.Rect(min(self.A.x, self.B.x), min(self.A.y, self.B.y), abs(self.A.x-self.B.x), abs(self.A.y-self.B.y))
-        self.old_rect=self.rect.copy()
+        self.A = Vector2(A)
+        self.B = Vector2(B)
+        
     def draw(self, win):
         #pygame.draw.rect(win, (100, 100, 100), self.rect, width=2)
         pygame.draw.aaline(win, (255, 255, 255), self.A, self.B)
+
+    @property
+    def rect(self):
+        return pygame.Rect(min(self.A.x, self.B.x), min(self.A.y, self.B.y), abs(self.A.x-self.B.x), abs(self.A.y-self.B.y)) 
 
 
     def closestPoint(self, P):

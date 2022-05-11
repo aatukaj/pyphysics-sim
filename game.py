@@ -21,12 +21,13 @@ def main():
     lines = pygame.sprite.Group()
     Box((375, 250), (50, 400), (all_sprites, obstacles))
 
-    LineSegment(Vector2(100, 100), Vector2(200, 400), (obstacles, lines)),
-    LineSegment(Vector2(500, 500), Vector2(800, 400), (obstacles, lines))
-    p = Particle(Vector2(100, 200), Vector2(800, 0),
-                 Vector2(0, 1000), 20, obstacles, all_sprites)
-    Particle(Vector2(100, 200), Vector2(800, 0),
-             Vector2(0, 1000), 20, obstacles, all_sprites)
+    line = LineSegment((100, 100), (200, 400), (obstacles, lines))
+    LineSegment((500, 500), (800, 400), (obstacles, lines))
+    p = Particle((100, 200), (800, 0),
+                 20, obstacles, (obstacles, all_sprites), color=(255, 0, 0))
+    for _ in range(10):
+        Particle((100, 200), (800, 0),
+                 20, obstacles, (obstacles, all_sprites))
 
     prev_pos = p.rect.center
 
@@ -44,12 +45,11 @@ def main():
 
     pygame.font.init()
     font = pygame.font.SysFont('Comic Sans MS', 30)
-    fps = 0
     text_surface = font.render(
         f"FPS: {round(clock.get_fps())}", False, (255, 255, 255))
 
     while run:
-        dt = clock.tick()/1000
+        dt = clock.tick()/1000/3
         for event in pygame.event.get():
             if event.type == QUIT:
                 run = False
@@ -62,7 +62,7 @@ def main():
                 fps = clock.get_fps()
                 text_surface = font.render(
                     f"FPS: {round(fps)}", False, (255, 255, 255))
-            if event.type == pygame.KEYDOWN:
+            if event.type == KEYDOWN:
                 if event.key == K_SPACE:
                     prev_pos = p.rect.center
                     background.fill((0, 0, 0))
@@ -70,13 +70,17 @@ def main():
         keys = pygame.key.get_pressed()
 
         if keys[K_RIGHT]:
-            p.vel.x += 1000*dt
+            line.A.x += 1000*dt
+            line.B.x += 1000*dt
         if keys[K_LEFT]:
-            p.vel.x -= 1000*dt
+            line.A.x -= 1000*dt
+            line.B.x -= 1000*dt
         if keys[K_DOWN]:
-            p.vel.y += 1000*dt
+            line.A.y += 1000*dt
+            line.B.y += 1000*dt
         if keys[K_UP]:
-            p.vel.y -= 1500*dt
+            line.A.y -= 1000*dt
+            line.B.y -= 1000*dt
 
         all_sprites.update(dt)
 
