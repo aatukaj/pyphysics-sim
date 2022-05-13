@@ -1,4 +1,3 @@
-from decimal import DivisionByZero
 import pygame
 from pygame import Vector2
 from pygame.locals import SRCALPHA
@@ -45,7 +44,7 @@ class Particle(pygame.sprite.Sprite):
             self.vel.y *= -1
     
     def line_collision(self, line: LineSegment):
-        center = self.pos+Vector2(self.r, self.r)
+        center = self.rect.center
         point = line.closestPoint(center)
         dist = point.distance_to(center)
         if dist < self.r:
@@ -57,8 +56,8 @@ class Particle(pygame.sprite.Sprite):
             self.vel.reflect_ip(normal)
             dif = center-point
             if dif.x != 0 or dif.y != 0:
-                dif.scale_to_length(dist-self.r+3)
-                self.pos += dif
+                dif.scale_to_length(dist-self.r)
+                self.pos -= dif
                 self.rect.topleft = self.pos
 
     def particle_collision(self, other):
@@ -75,8 +74,14 @@ class Particle(pygame.sprite.Sprite):
         try:
             self.vel = self.vel-((2*m2)/(m1+m2))*((v1-v2).dot(c1-c2)/(c1-c2).magnitude()**2)*(c1-c2)
             other.vel = other.vel-((2*m1)/(m1+m2))*((v2-v1).dot(c2-c1)/(c2-c1).magnitude()**2)*(c2-c1)
+            dif = c1-c2
+            dif.scale_to_length(c1.distance_to(c2)-self.r-other.r)
+            self.pos-=dif
+            self.rect.topleft = self.pos
         except ZeroDivisionError:
-            other.pos += Vector2(0, self.r+other.r)
+            self.pos += Vector2(0, self.r+other.r)
+            self.rect.topleft = other.pos
+ 
         self.has_collided = True
         
     def window_collision(self):
@@ -111,7 +116,6 @@ class Particle(pygame.sprite.Sprite):
                     self.line_collision(sprite)
                 if isinstance(sprite, Particle):
                     self.particle_collision(sprite)
-        self.window_collision()
 
     def update(self, dt):
         self.has_collided= False
@@ -124,4 +128,3 @@ class Particle(pygame.sprite.Sprite):
         self.rect.y = round(self.pos.y)
             
         self.collision()
-        self.window_collision()

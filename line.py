@@ -9,13 +9,15 @@ class LineSegment(pygame.sprite.Sprite):
         self.A = Vector2(A)
         self.B = Vector2(B)
         
-    def draw(self, win):
+    def draw(self, win, offset = Vector2(0, 0)):
         #pygame.draw.rect(win, (100, 100, 100), self.rect, width=2)
-        pygame.draw.aaline(win, (255, 255, 255), self.A, self.B)
+        pygame.draw.line(win, (255, 255, 255), self.A+offset, self.B+offset, width=2)
+        pygame.draw.circle(win, (255, 255, 255), self.A+offset, radius=5)
+        pygame.draw.circle(win, (255, 255, 255), self.B+offset, radius=5)
 
     @property
     def rect(self):
-        return pygame.Rect(min(self.A.x, self.B.x), min(self.A.y, self.B.y), abs(self.A.x-self.B.x), abs(self.A.y-self.B.y)) 
+        return pygame.Rect(min(self.A.x, self.B.x), min(self.A.y, self.B.y), max(abs(self.A.x-self.B.x), 1), max(abs(self.A.y-self.B.y), 1)) 
 
 
     def closestPoint(self, P):
@@ -30,7 +32,7 @@ class LineSegment(pygame.sprite.Sprite):
             return self.B
         else:
             return self.A+AB*distance
-
+    
 
 def main():
     from pygame.locals import QUIT
