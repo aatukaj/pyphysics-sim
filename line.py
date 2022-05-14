@@ -34,21 +34,11 @@ class LineSegment(pygame.sprite.Sprite):
             return self.A+AB*distance
     
 
-def main():
-    from pygame.locals import QUIT
-    line=LineSegment(Vector2(100, 100), Vector2(200, 200), ())
-    win = pygame.display.set_mode((500, 500))
-    run = True
-    while run:
-        win.fill((0, 0, 0))
-        mpos = Vector2(pygame.mouse.get_pos())
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                run = False
-        point = line.closestPoint(mpos)
-        pygame.draw.circle(win, (255, 0, 0), point, 5)
-        line.draw(win)
-        pygame.display.update()
-
-if __name__ == "__main__":
-    main()
+class Polygon:
+    def __init__(self, points, groups):
+        self.lines = [LineSegment(points[0], points[1], groups)]
+        
+        for i in range(2, len(points)):
+            self.lines.append(LineSegment(self.lines[-1].B, points[i], groups))
+        self.lines.append(LineSegment(self.lines[-1].B, self.lines[0].A, groups))
+        print(self.lines)
