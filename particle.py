@@ -1,6 +1,5 @@
 import pygame
-from pygame import Vector2
-from pygame.locals import SRCALPHA
+from pygame import Rect, Vector2
 from line import LineSegment
 from box import Box
 from constants import *
@@ -9,10 +8,7 @@ from math import pi
 class Particle(pygame.sprite.Sprite):
     def __init__(self, pos, vel, r, obstacles, groups, color=(255, 255, 255), acc=GRAVITY):
         super().__init__(groups)
-        self.image = pygame.Surface((r*2, r*2), SRCALPHA)
-        self.rect = self.image.get_rect(topleft=pos)
-        pygame.gfxdraw.aacircle(self.image, r, r, r-1, color)
-        pygame.gfxdraw.filled_circle(self.image, r, r, r-1, color)
+        self.rect = Rect(pos, (r*2, r*2))
         self.pos = Vector2(pos)
         self.vel = Vector2(vel)
         self.acc = Vector2(acc)
@@ -21,6 +17,7 @@ class Particle(pygame.sprite.Sprite):
         self.obstacles = obstacles
         self.old_rect = self.rect.copy()
         self.has_collided = False
+        self.color = color
 
     def box_collision(self, box: Box):
         if (self.rect.right >= box.rect.left and self.old_rect.right <= box.old_rect.left):
@@ -128,3 +125,5 @@ class Particle(pygame.sprite.Sprite):
         self.rect.y = round(self.pos.y)
             
         self.collision()
+    def draw(self, win, offset=Vector2(0, 0)):
+        pygame.draw.circle(win, self.color, Vector2(self.rect.center)+offset, self.r)

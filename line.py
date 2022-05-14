@@ -6,8 +6,12 @@ import pygame.gfxdraw
 class LineSegment(pygame.sprite.Sprite):
     def __init__(self, A, B, groups):
         super().__init__(groups)
-        self.A = Vector2(A)
-        self.B = Vector2(B)
+        if isinstance(A, Vector2):
+            self.A = A
+        else: self.A = Vector2(A)
+        if isinstance(B, Vector2):
+            self.B = B
+        else: self.B = Vector2(B)
         
     def draw(self, win, offset = Vector2(0, 0)):
         #pygame.draw.rect(win, (100, 100, 100), self.rect, width=2)
@@ -35,10 +39,10 @@ class LineSegment(pygame.sprite.Sprite):
     
 
 class Polygon:
-    def __init__(self, points, groups):
+    def __init__(self, points, groups, closed=True):
         self.lines = [LineSegment(points[0], points[1], groups)]
         
         for i in range(2, len(points)):
-            self.lines.append(LineSegment(self.lines[-1].B, points[i], groups))
-        self.lines.append(LineSegment(self.lines[-1].B, self.lines[0].A, groups))
-        print(self.lines)
+            self.lines.append(LineSegment(self.lines[-1].B, Vector2(points[i]), groups))
+        if closed:
+            self.lines.append(LineSegment(self.lines[-1].B, self.lines[0].A, groups))
