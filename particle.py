@@ -1,7 +1,7 @@
 import pygame
 from pygame import Rect, Vector2
 from line import LineSegment
-from box import Box
+
 from constants import *
 from math import pi
 
@@ -18,37 +18,17 @@ class Particle(pygame.sprite.Sprite):
         self.old_rect = self.rect.copy()
         self.has_collided = False
         self.color = color
-
-    def box_collision(self, box: Box):
-        if (self.rect.right >= box.rect.left and self.old_rect.right <= box.old_rect.left):
-            self.rect.right = box.rect.left
-            self.pos.x = self.rect.x
-            self.vel.x *= -1
-
-        if (self.rect.left <= box.rect.right and self.old_rect.left >= box.old_rect.right):
-            self.rect.left = box.rect.right
-            self.pos.x = self.rect.x
-            self.vel.x *= -1
-
-        if (self.rect.bottom >= box.rect.top and self.old_rect.bottom <= box.old_rect.top):
-            self.rect.bottom = box.rect.top
-            self.pos.y = self.rect.y
-            self.vel.y *= -1
-
-        if (self.rect.top <= box.rect.bottom and self.old_rect.top >= box.old_rect.bottom):
-            self.rect.top = box.rect.bottom
-            self.pos.y = self.rect.y
-            self.vel.y *= -1
     
     def line_collision(self, line: LineSegment):
         center = self.rect.center
         point = line.closestPoint(center)
+        if not point: return
         dist = point.distance_to(center)
         if dist < self.r:
-            if point == line.A or point == line.B:
-                normal = (line.A-line.B).normalize()
-            else:
-                normal = Vector2(-(line.A.y-line.B.y),
+            #if point == line.A or point == line.B:
+                #normal = (line.A-line.B).normalize()
+            #else:
+            normal = Vector2(-(line.A.y-line.B.y),
                                 line.A.x-line.B.x).normalize()
             self.vel.reflect_ip(normal)
             dif = center-point
@@ -107,8 +87,6 @@ class Particle(pygame.sprite.Sprite):
             for sprite in collision_sprites:
                 if sprite == self:
                     continue
-                if isinstance(sprite, Box):
-                    self.box_collision(sprite)
                 if isinstance(sprite, LineSegment):
                     self.line_collision(sprite)
                 if isinstance(sprite, Particle):

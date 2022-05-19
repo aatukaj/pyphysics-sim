@@ -25,6 +25,8 @@ class LineSegment(pygame.sprite.Sprite):
 
 
     def closestPoint(self, P):
+        if self.A.xy == self.B.xy: return 
+
         AP = P-self.A
         AB = self.B-self.A
         magnitudeAB = AB.length_squared()
