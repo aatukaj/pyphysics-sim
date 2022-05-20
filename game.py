@@ -1,28 +1,32 @@
-from enum import Enum, auto
 import pygame
 from pygame import Vector2
 from pygame.locals import *
 import pygame.gfxdraw
+
 from line import LineSegment, Polygon
 from particle import Particle
-from constants import *
-import random
 from camera import CameraGroup
+from constants import *
+
+import random
 import pickle
 import sys
+from enum import Enum, auto
+
 
 class State(Enum):
     DEFAULT = auto()
     CREATING_POLYGON = auto()
 
+
 class App:
     def __init__(self):
         pygame.init()
 
-        self.clock =  pygame.time.Clock()
+        self.clock = pygame.time.Clock()
         self.win = pygame.display.set_mode((WIDTH, HEIGHT), RESIZABLE)
 
-        self.camera_group=CameraGroup()
+        self.camera_group = CameraGroup()
         self.obstacles = pygame.sprite.Group()
         self.fps = 0
         self.font = pygame.font.SysFont('Comic Sans MS', 30)
@@ -32,15 +36,18 @@ class App:
         self.UPDATEFPS = USEREVENT+2
         pygame.time.set_timer(self.UPDATEFPS, 100)
 
-        self.prev_point = None      
-        LineSegment((100, 700), (500, 700), (self.camera_group, self.obstacles))
-        LineSegment((500, 500), (800, 400), (self.camera_group, self.obstacles))
+        self.prev_point = None
+        LineSegment((100, 700), (500, 700),
+                    (self.camera_group, self.obstacles))
+        LineSegment((500, 500), (800, 400),
+                    (self.camera_group, self.obstacles))
 
-        Polygon([(0, 0), (1500, 0), (1500, 1000), (0, 1000)], (self.camera_group, self.obstacles))
+        Polygon([(0, 0), (1500, 0), (1500, 1000), (0, 1000)],
+                (self.camera_group, self.obstacles))
 
         for _ in range(50):
-            Particle((100, 200), (200, 0), 20, self.camera_group, self.camera_group, color=random.choice(list(COLORS.values())))
-
+            Particle((100, 200), (200, 0), 20, self.camera_group,
+                     self.camera_group, color=random.choice(list(COLORS.values())))
 
     def render(self):
         self.win.fill((0, 0, 0))
@@ -50,7 +57,7 @@ class App:
         self.win.blit(text_surface, (0, 0))
 
         pygame.display.update()
-    
+
     def handle_mouse(self):
         mouse = pygame.mouse.get_pressed()
         if self.state == State.DEFAULT:
@@ -91,11 +98,11 @@ class App:
 
             if event.type == KEYDOWN:
                 if event.key == K_s:
-                    self.save_obstacles() 
-                    
+                    self.save_obstacles()
+
                 elif event.key == K_w:
                     self.load_obstacles()
-            
+
             if self.state == State.DEFAULT:
                 if event.type == KEYDOWN:
                     if event.key == K_1:
@@ -110,9 +117,10 @@ class App:
                 if event.type == MOUSEBUTTONDOWN:
                     if event.button == 1:
                         if self.prev_point is not None:
-                            LineSegment(self.prev_point, self.mpos, (self.obstacles, self.camera_group))
+                            LineSegment(self.prev_point, self.mpos,
+                                        (self.obstacles, self.camera_group))
                         self.prev_point = self.mpos
-                        
+
     def save_obstacles(self):
         self.camera_group.remove(self.obstacles)
         self.saved_obstacles = pickle.dumps(self.obstacles)
@@ -129,16 +137,16 @@ class App:
             dt = self.clock.tick()/1000
             if self.window_moved:
                 self.window_moved = False
-                dt=0
+                dt = 0
 
-            self.mpos = self.camera_group.screenpos_to_worldpos(Vector2(pygame.mouse.get_pos()))
-            self.handle_events()  
+            self.mpos = self.camera_group.screenpos_to_worldpos(
+                Vector2(pygame.mouse.get_pos()))
+            self.handle_events()
             self.handle_mouse()
             self.camera_group.update(dt)
             self.render()
 
 
-            
 if __name__ == "__main__":
     app = App()
     app.run()
