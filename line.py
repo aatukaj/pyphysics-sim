@@ -13,11 +13,12 @@ class LineSegment(pygame.sprite.Sprite):
             self.B = B
         else: self.B = Vector2(B)
         
-    def draw(self, win, offset = Vector2(0, 0)):
+    def draw(self, win, offset = Vector2(0, 0), zoom = 1):
         #pygame.draw.rect(win, (100, 100, 100), self.rect, width=2)
-        pygame.draw.line(win, (255, 255, 255), self.A+offset, self.B+offset, width=2)
-        pygame.draw.circle(win, (255, 255, 255), self.A+offset, radius=5)
-        pygame.draw.circle(win, (255, 255, 255), self.B+offset, radius=5)
+        pygame.draw.line(win, (255, 255, 255), (self.A+offset)*zoom, (self.B+offset)*zoom, width=max(round(2*zoom), 1))
+        for p in (self.A, self.B):
+            pygame.draw.circle(win, (255, 255, 255), (p+offset)*zoom, radius=7*zoom)
+
 
     @property
     def rect(self):

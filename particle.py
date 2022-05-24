@@ -103,5 +103,5 @@ class Particle(pygame.sprite.Sprite):
         self.rect.y = round(self.pos.y)
             
         self.collision()
-    def draw(self, win, offset=Vector2(0, 0)):
-        pygame.draw.circle(win, self.color, Vector2(self.rect.center)+offset, self.r)
+    def draw(self, win, offset=Vector2(0, 0), zoom = 1):
+        pygame.draw.circle(win, self.color, (Vector2(self.rect.center)+offset)*zoom, self.r*zoom)

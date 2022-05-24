@@ -2,11 +2,14 @@ import pygame
 from pygame import Vector2
 from pygame.locals import *
 import pygame.gfxdraw
+import pygame_gui as pgg
+
 
 from line import LineSegment, Polygon
 from particle import Particle
 from camera import CameraGroup
 from constants import *
+from ui import MenuWindow
 
 import random
 import pickle
@@ -19,19 +22,23 @@ class State(Enum):
     CREATING_POLYGON = auto()
 
 
+
 class App:
     def __init__(self):
         pygame.init()
 
         self.clock = pygame.time.Clock()
         self.win = pygame.display.set_mode((WIDTH, HEIGHT), RESIZABLE)
+        
 
         self.camera_group = CameraGroup()
         self.obstacles = pygame.sprite.Group()
         self.fps = 0
         self.font = pygame.font.SysFont('Comic Sans MS', 30)
         self.state = State.DEFAULT
+        self.paused = False
         self.window_moved = False
+        self.time_scale = 1
 
         self.UPDATEFPS = USEREVENT+2
         pygame.time.set_timer(self.UPDATEFPS, 100)
@@ -45,17 +52,20 @@ class App:
         Polygon([(0, 0), (1500, 0), (1500, 1000), (0, 1000)],
                 (self.camera_group, self.obstacles))
 
-        for _ in range(50):
+        for _ in range(10):
             Particle((100, 200), (200, 0), 20, self.camera_group,
                      self.camera_group, color=random.choice(list(COLORS.values())))
+        
+        self.manager = pgg.UIManager((self.win.get_size()))
+        self.menu_window = MenuWindow(self.manager, self)
 
     def render(self):
         self.win.fill((0, 0, 0))
-        self.camera_group.zoomed_draw()
+        self.camera_group.optimized_zoomed_draw()
         text_surface = self.font.render(
             f"FPS: {round(self.fps)}", False, (255, 255, 255))
         self.win.blit(text_surface, (0, 0))
-
+        self.manager.draw_ui(self.win)
         pygame.display.update()
 
     def handle_mouse(self):
@@ -83,6 +93,7 @@ class App:
 
     def handle_events(self):
         for event in pygame.event.get():
+            
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -92,6 +103,7 @@ class App:
                 self.camera_group.change_zoom(event.y * 0.1)
             if event.type == VIDEORESIZE:
                 self.camera_group.update_vars()
+                self.manager.set_window_resolution((self.win.get_size()))
                 self.window_moved = True
             if event.type == WINDOWMOVED:
                 self.window_moved = True
@@ -102,6 +114,13 @@ class App:
 
                 elif event.key == K_w:
                     self.load_obstacles()
+                elif event.key == K_SPACE:
+                    self.paused = not self.paused
+                elif event.key == K_LALT:
+                    if not self.menu_window.alive():
+                        self.menu_window = MenuWindow(self.manager)
+                    else:
+                        self.menu_window.kill()
 
             if self.state == State.DEFAULT:
                 if event.type == KEYDOWN:
@@ -120,6 +139,8 @@ class App:
                             LineSegment(self.prev_point, self.mpos,
                                         (self.obstacles, self.camera_group))
                         self.prev_point = self.mpos
+                        
+            self.manager.process_events(event)
 
     def save_obstacles(self):
         self.camera_group.remove(self.obstacles)
@@ -134,17 +155,21 @@ class App:
 
     def run(self):
         while True:
-            dt = self.clock.tick()/1000
+            dt = self.clock.tick()/1000*self.time_scale
             if self.window_moved:
                 self.window_moved = False
+                dt = 0
+            if self.paused:
                 dt = 0
 
             self.mpos = self.camera_group.screenpos_to_worldpos(
                 Vector2(pygame.mouse.get_pos()))
             self.handle_events()
+            self.manager.update(dt)
             self.handle_mouse()
             self.camera_group.update(dt)
             self.render()
+            print(self.time_scale)
 
 
 if __name__ == "__main__":
