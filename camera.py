@@ -35,19 +35,15 @@ class CameraGroup(pygame.sprite.Group):
     def screenpos_to_worldpos(self, pos):
         return (pos)/self.zoom_scale-Vector2(self.half_w, self.half_h)/self.zoom_scale-self.offset
         
-
-    def update(self, *args, **kwargs):
+    def handle_keys(self, dt):
         keys = pygame.key.get_pressed()
-        dt = args[0]
-        
+        amount = 500*dt*(1/self.zoom_scale)
         if keys[K_RIGHT]:
-            self.offset.x -= 1000*dt
+            self.offset.x -= amount
         if keys[K_LEFT]:
-            self.offset.x += 1000*dt
+            self.offset.x += amount
         if keys[K_DOWN]:
-            self.offset.y -= 1000*dt
+            self.offset.y -= amount
         if keys[K_UP]:
-            self.offset.y += 1000*dt
-
-        return super().update(*args, **kwargs)
+            self.offset.y += amount
 

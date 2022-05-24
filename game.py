@@ -52,7 +52,7 @@ class App:
         Polygon([(0, 0), (1500, 0), (1500, 1000), (0, 1000)],
                 (self.camera_group, self.obstacles))
 
-        for _ in range(10):
+        for _ in range(30):
             Particle((100, 200), (200, 0), 20, self.camera_group,
                      self.camera_group, color=random.choice(list(COLORS.values())))
         
@@ -118,7 +118,7 @@ class App:
                     self.paused = not self.paused
                 elif event.key == K_LALT:
                     if not self.menu_window.alive():
-                        self.menu_window = MenuWindow(self.manager)
+                        self.menu_window = MenuWindow(self.manager, self)
                     else:
                         self.menu_window.kill()
 
@@ -155,7 +155,7 @@ class App:
 
     def run(self):
         while True:
-            dt = self.clock.tick()/1000*self.time_scale
+            dt = self.clock.tick()/1000
             if self.window_moved:
                 self.window_moved = False
                 dt = 0
@@ -167,7 +167,8 @@ class App:
             self.handle_events()
             self.manager.update(dt)
             self.handle_mouse()
-            self.camera_group.update(dt)
+            self.camera_group.update(dt*self.time_scale)
+            self.camera_group.handle_keys(dt)
             self.render()
             print(self.time_scale)
 
