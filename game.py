@@ -36,7 +36,6 @@ class App:
         self.fps = 0
         self.font = pygame.font.SysFont('Comic Sans MS', 30)
         self.state = State.DEFAULT
-        self.paused = False
         self.window_moved = False
         self.time_scale = 1
 
@@ -115,7 +114,9 @@ class App:
                 elif event.key == K_w:
                     self.load_obstacles()
                 elif event.key == K_SPACE:
-                    self.paused = not self.paused
+                    if self.time_scale != 0:
+                        self.time_scale = 0
+                    else: self.time_scale = 1
                 elif event.key == K_LALT:
                     if not self.menu_window.alive():
                         self.menu_window = MenuWindow(self.manager, self)
@@ -159,20 +160,18 @@ class App:
             if self.window_moved:
                 self.window_moved = False
                 dt = 0
-            if self.paused:
-                dt = 0
 
-            self.mpos = self.camera_group.screenpos_to_worldpos(
-                Vector2(pygame.mouse.get_pos()))
+            self.screen_mpos = Vector2(pygame.mouse.get_pos())
+            self.mpos = self.camera_group.screenpos_to_worldpos(self.screen_mpos)
             self.handle_events()
             self.manager.update(dt)
-            self.handle_mouse()
+
+            if not self.menu_window.get_container().rect.collidepoint(self.screen_mpos):
+                self.handle_mouse()
             self.camera_group.update(dt*self.time_scale)
             self.camera_group.handle_keys(dt)
             self.render()
 
-
 if __name__ == "__main__":
     app = App()
-
     app.run()

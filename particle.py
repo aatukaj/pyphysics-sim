@@ -60,25 +60,6 @@ class Particle(pygame.sprite.Sprite):
             self.rect.topleft = other.pos
  
         self.has_collided = True
-        
-    def window_collision(self):
-        if self.rect.left < 0:
-            self.rect.left = 0
-            self.pos.x = self.rect.x
-            self.vel.x *= -1
-        if self.rect.right > WIDTH:
-            self.rect.right = WIDTH
-            self.pos.x = self.rect.x
-            self.vel.x *= -1
-
-        if self.rect.top < 0:
-            self.rect.top = 0
-            self.pos.y = self.rect.y
-            self.vel.y *= -1
-        if self.rect.bottom > HEIGHT:
-            self.rect.bottom = HEIGHT
-            self.pos.y = self.rect.y
-            self.vel.y *= -1
 
     def collision(self):
         collision_sprites = pygame.sprite.spritecollide(
@@ -104,4 +85,4 @@ class Particle(pygame.sprite.Sprite):
             
         self.collision()
     def draw(self, win, offset=Vector2(0, 0), zoom = 1):
-        pygame.draw.circle(win, self.color, (Vector2(self.rect.center)+offset)*zoom, self.r*zoom)
+        pygame.draw.circle(win, self.color, (Vector2(self.pos)+Vector2(self.r, self.r)+offset)*zoom, self.r*zoom)
