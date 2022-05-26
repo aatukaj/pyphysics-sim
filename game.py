@@ -170,9 +170,9 @@ class App:
             self.camera_group.update(dt*self.time_scale)
             self.camera_group.handle_keys(dt)
             self.render()
-            print(self.time_scale)
 
 
 if __name__ == "__main__":
     app = App()
+
     app.run()

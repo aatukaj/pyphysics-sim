@@ -4,16 +4,30 @@ import pygame
 
 class MenuWindow(pgg.elements.UIWindow):
     def __init__(self, manager, app):
+        self.manager = manager
         self.app = app
-        super().__init__(pygame.Rect((50, 50), (200, 300)), manager,
-                         window_display_title="Menu", object_id="#menu_window")
-        self.timescale_slider = pgg.elements.UIHorizontalSlider(pygame.Rect(
-            self.rect.width*0.1, 10, self.rect.width*0.7, 20), app.time_scale, (0.0, 2.0), manager, self)
+        super().__init__(pygame.Rect((0, 0), (200, 300)), manager,
+                         window_display_title="Menu", object_id="#menu_window")                  
+        self.container_rect = self.get_container().get_rect()
+        self.sliders = []
+        self.add_slider(pygame.Rect(4, 4, self.container_rect.width-8, 20), (0.0, 2.0), self.app, "time_scale")
+        self.add_slider(pygame.Rect(4, 24, self.container_rect.width-8, 20), (self.app.camera_group.MIN_ZOOM, self.app.camera_group.MAX_ZOOM), self.app.camera_group, "zoom_scale")
 
+    def add_slider(self, rect, value_range, obj, attr):
+        if not hasattr(obj, attr):
+            return
+        slider = pgg.elements.UIHorizontalSlider(rect, getattr(obj, attr), value_range, self.manager, self, self)
+        self.sliders.append({
+            "slider": slider,
+            "obj": obj,
+            "attr": attr,
+        })
+        
     def process_event(self, event):
         handled = super().process_event(event)
         if event.type == pgg.UI_HORIZONTAL_SLIDER_MOVED:
-            if event.ui_element == self.timescale_slider:
-                self.app.time_scale = self.timescale_slider.get_current_value()
-                handled = True
+            for i in self.sliders:
+                if event.ui_element == i["slider"]:
+                    setattr(i["obj"], i["attr"], i["slider"].get_current_value())
+                    handled = True
         return handled

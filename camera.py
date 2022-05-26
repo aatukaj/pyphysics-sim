@@ -11,6 +11,8 @@ class CameraGroup(pygame.sprite.Group):
         self.offset = Vector2(0, 0)
         self.zoom_scale = 1
         self.update_vars()
+        self.MIN_ZOOM = 0.25
+        self.MAX_ZOOM = 2
 
     def update_vars(self):
         display_size=Vector2(self.display_surface.get_size())
@@ -18,10 +20,10 @@ class CameraGroup(pygame.sprite.Group):
 
     def change_zoom(self, amount):
         new_zoom = self.zoom_scale+amount
-        if new_zoom < 0.25:
-            self.zoom_scale = 0.25
-        elif new_zoom > 2:
-            self.zoom_scale = 2
+        if new_zoom < self.MIN_ZOOM:
+            self.zoom_scale = self.MIN_ZOOM
+        elif new_zoom > self.MAX_ZOOM:
+            self.zoom_scale = self.MAX_ZOOM
         else:
             self.zoom_scale = new_zoom
         
