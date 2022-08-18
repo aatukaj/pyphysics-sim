@@ -4,7 +4,6 @@ from pygame.locals import *
 import pygame.gfxdraw
 import pygame_gui as pgg
 
-
 from line import LineSegment, Polygon
 from particle import Particle
 from camera import CameraGroup
@@ -21,23 +20,23 @@ class State(Enum):
     DEFAULT = auto()
     CREATING_POLYGON = auto()
 
-
-
 class App:
     def __init__(self):
         pygame.init()
 
         self.clock = pygame.time.Clock()
         self.win = pygame.display.set_mode((WIDTH, HEIGHT), RESIZABLE)
-        
 
         self.camera_group = CameraGroup()
         self.obstacles = pygame.sprite.Group()
         self.fps = 0
+        self.max_fps = 500
         self.font = pygame.font.SysFont('Comic Sans MS', 30)
         self.state = State.DEFAULT
         self.window_moved = False
         self.time_scale = 1
+        self.tracked_object = None
+        self.current_polygon = None
 
         self.UPDATEFPS = USEREVENT+2
         pygame.time.set_timer(self.UPDATEFPS, 100)
@@ -54,13 +53,14 @@ class App:
         for _ in range(30):
             Particle((100, 200), (200, 0), 20, self.camera_group,
                      self.camera_group, color=random.choice(list(COLORS.values())))
-        
+        Particle((200, 300), (-200, 0), 40, self.camera_group, self.camera_group, color=(100, 100, 100))
+
         self.manager = pgg.UIManager((self.win.get_size()))
         self.menu_window = MenuWindow(self.manager, self)
 
     def render(self):
         self.win.fill((0, 0, 0))
-        self.camera_group.optimized_zoomed_draw()
+        self.camera_group.draw()
         text_surface = self.font.render(
             f"FPS: {round(self.fps)}", False, (255, 255, 255))
         self.win.blit(text_surface, (0, 0))
@@ -92,7 +92,7 @@ class App:
 
     def handle_events(self):
         for event in pygame.event.get():
-            
+
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
@@ -116,7 +116,8 @@ class App:
                 elif event.key == K_SPACE:
                     if self.time_scale != 0:
                         self.time_scale = 0
-                    else: self.time_scale = 1
+                    else:
+                        self.time_scale = 1
                 elif event.key == K_LALT:
                     if not self.menu_window.alive():
                         self.menu_window = MenuWindow(self.manager, self)
@@ -128,6 +129,16 @@ class App:
                     if event.key == K_1:
                         self.state = State.CREATING_POLYGON
                         self.prev_point = None
+                        self.current_polygon = None
+                    if event.key == K_2:
+                        Particle(self.mpos, (0, 0), 20, self.camera_group, self.camera_group)
+                    if event.key == K_f:
+                        if self.tracked_object is None:
+                            for sprite in self.camera_group:
+                                if sprite.rect.collidepoint(self.mpos):
+                                    self.camera_group.tracked_object = sprite
+                        else:
+                            self.camera_group.tracked_object = None
 
             elif self.state == State.CREATING_POLYGON:
                 if event.type == KEYDOWN:
@@ -136,11 +147,12 @@ class App:
 
                 if event.type == MOUSEBUTTONDOWN:
                     if event.button == 1:
-                        if self.prev_point is not None:
-                            LineSegment(self.prev_point, self.mpos,
-                                        (self.obstacles, self.camera_group))
+                        if self.prev_point and self.current_polygon is None:
+                            self.current_polygon = Polygon((self.prev_point, self.mpos), (self.camera_group, self.obstacles))
+                        elif self.current_polygon: 
+                            self.current_polygon.add_point(self.mpos)
                         self.prev_point = self.mpos
-                        
+
             self.manager.process_events(event)
 
     def save_obstacles(self):
@@ -156,21 +168,21 @@ class App:
 
     def run(self):
         while True:
-            dt = self.clock.tick()/1000
+            dt = self.clock.tick(self.max_fps)/1000
             if self.window_moved:
                 self.window_moved = False
                 dt = 0
-
             self.screen_mpos = Vector2(pygame.mouse.get_pos())
-            self.mpos = self.camera_group.screenpos_to_worldpos(self.screen_mpos)
+            self.mpos = self.camera_group.screenpos_to_worldpos(
+                self.screen_mpos)
             self.handle_events()
             self.manager.update(dt)
-
             if not self.menu_window.get_container().rect.collidepoint(self.screen_mpos):
                 self.handle_mouse()
             self.camera_group.update(dt*self.time_scale)
             self.camera_group.handle_keys(dt)
             self.render()
+
 
 if __name__ == "__main__":
     app = App()

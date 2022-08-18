@@ -73,7 +73,7 @@ class Particle(pygame.sprite.Sprite):
                 if isinstance(sprite, Particle):
                     self.particle_collision(sprite)
 
-    def update(self, dt):
+    def update(self, dt: float):
         self.has_collided= False
         self.old_rect = self.rect.copy()
 
@@ -84,5 +84,6 @@ class Particle(pygame.sprite.Sprite):
         self.rect.y = round(self.pos.y)
             
         self.collision()
+        
     def draw(self, win, offset=Vector2(0, 0), zoom = 1):
         pygame.draw.circle(win, self.color, (Vector2(self.pos)+Vector2(self.r, self.r)+offset)*zoom, self.r*zoom)

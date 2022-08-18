@@ -25,7 +25,7 @@ class LineSegment(pygame.sprite.Sprite):
         return pygame.Rect(min(self.A.x, self.B.x), min(self.A.y, self.B.y), max(abs(self.A.x-self.B.x), 1), max(abs(self.A.y-self.B.y), 1)) 
 
 
-    def closestPoint(self, P):
+    def closestPoint(self, P: Vector2):
         if self.A.xy == self.B.xy: return 
 
         AP = P-self.A
@@ -44,8 +44,20 @@ class LineSegment(pygame.sprite.Sprite):
 class Polygon:
     def __init__(self, points, groups, closed=True):
         self.lines = [LineSegment(points[0], points[1], groups)]
-        
+        self.closed = closed
+        self.groups = groups
         for i in range(2, len(points)):
             self.lines.append(LineSegment(self.lines[-1].B, Vector2(points[i]), groups))
         if closed:
-            self.lines.append(LineSegment(self.lines[-1].B, self.lines[0].A, groups))
+            self.connect_last_points()
+            
+    def connect_last_points(self):
+        self.lines.append(LineSegment(self.lines[-1].B, self.lines[0].A, self.groups))
+
+    def add_point(self, point):
+        if self.closed:
+            self.lines.pop().kill()
+            self.lines.append(LineSegment(self.lines[-1].B, Vector2(point), self.groups))
+            self.connect_last_points()
+        else:
+            self.lines.append(LineSegment(self.lines[-1].B, Vector2(point), self.groups))
