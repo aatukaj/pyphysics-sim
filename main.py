@@ -37,6 +37,7 @@ class App:
         self.time_scale = 1
         self.tracked_object = None
         self.current_polygon = None
+        self.paused = False
 
         self.UPDATEFPS = USEREVENT+2
         pygame.time.set_timer(self.UPDATEFPS, 100)
@@ -114,10 +115,7 @@ class App:
                 elif event.key == K_w:
                     self.load_obstacles()
                 elif event.key == K_SPACE:
-                    if self.time_scale != 0:
-                        self.time_scale = 0
-                    else:
-                        self.time_scale = 1
+                    self.paused = not self.paused
                 elif event.key == K_LALT:
                     if not self.menu_window.alive():
                         self.menu_window = MenuWindow(self.manager, self)
@@ -133,7 +131,7 @@ class App:
                     if event.key == K_2:
                         Particle(self.mpos, (0, 0), 20, self.camera_group, self.camera_group)
                     if event.key == K_f:
-                        if self.tracked_object is None:
+                        if self.camera_group.tracked_object is None:
                             for sprite in self.camera_group:
                                 if sprite.rect.collidepoint(self.mpos):
                                     self.camera_group.tracked_object = sprite
@@ -171,6 +169,8 @@ class App:
             dt = self.clock.tick(self.max_fps)/1000
             if self.window_moved:
                 self.window_moved = False
+                dt = 0
+            if self.paused:
                 dt = 0
             self.screen_mpos = Vector2(pygame.mouse.get_pos())
             self.mpos = self.camera_group.screenpos_to_worldpos(
